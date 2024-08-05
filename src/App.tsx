@@ -1,6 +1,8 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import { getTodos, addTodo, deleteTodo, type Todo, updateTodo } from './api/todo';
+import { getTodos, addTodo, deleteTodo, updateTodo, type Todo } from '@/api/todo';
+import DoneIcon from './assets/done.svg?react';
+import PendingIcon from './assets/pending.svg?react';
 
 function App() {
   const [addTodoText, setAddTodoText] = useState('');
@@ -95,7 +97,7 @@ function App() {
                     type='checkbox'
                     checked={editCompleted}
                     onChange={(e) => setEditCompleted(e.target.checked)}
-                    className='w-6 h-6 mr-3'
+                    className='accent-cyan-500 custom-checkbox w-6 h-6 mr-3'
                   ></input>
                   <input
                     value={editText}
@@ -105,8 +107,16 @@ function App() {
                 </div>
               ) : (
                 <div className='flex'>
-                  <div className='w-5 mr-3'>{todo.completed ? 'O' : '-'}</div>
-                  <div>{todo.title}</div>
+                  <div className='mr-3 fill-current'>
+                    {todo.completed ? (
+                      <DoneIcon className='w-6 h-6 text-gray-300' />
+                    ) : (
+                      <PendingIcon className='w-6 h-6 text-gray-600' />
+                    )}
+                  </div>
+                  <div className={todo.completed ? 'line-through opacity-40' : ''}>
+                    {todo.title}
+                  </div>
                 </div>
               )}
               <div>
