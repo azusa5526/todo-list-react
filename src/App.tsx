@@ -62,15 +62,9 @@ function App() {
   }
 
   function handleSelectTodo(todo: Todo) {
-    if (todo.id === selectedTodo?.id) {
-      setSelectedTodo(undefined);
-      setEditText('');
-      setEditCompleted(false);
-    } else {
-      setSelectedTodo(todo);
-      setEditText(todo.title);
-      setEditCompleted(todo.completed);
-    }
+    setSelectedTodo(todo);
+    setEditText(todo.title);
+    setEditCompleted(todo.completed);
   }
 
   return (
