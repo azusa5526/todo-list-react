@@ -7,9 +7,7 @@ import PendingIcon from './assets/pending.svg?react';
 function App() {
   const [addTodoText, setAddTodoText] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | undefined>();
-  const [editText, setEditText] = useState('');
-  const [editCompleted, setEditCompleted] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
 
   useEffect(() => {
     fetchTodos();
@@ -54,8 +52,11 @@ function App() {
     if (!selectedTodo) return;
 
     try {
-      await updateTodo(selectedTodo.id, { title: editText, completed: editCompleted });
-      setSelectedTodo(undefined);
+      await updateTodo(selectedTodo.id, {
+        title: selectedTodo.title,
+        completed: selectedTodo.completed,
+      });
+      setSelectedTodo(null);
     } catch (error) {
       console.error('updateTodo err', error);
     }
@@ -65,9 +66,17 @@ function App() {
 
   function handleSelectTodo(todo: Todo) {
     setSelectedTodo(todo);
-    setEditText(todo.title);
-    setEditCompleted(todo.completed);
   }
+
+  const handleEditTodoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    if (selectedTodo) {
+      setSelectedTodo({
+        ...selectedTodo,
+        [name]: type === 'checkbox' ? checked : value,
+      });
+    }
+  };
 
   return (
     <>
@@ -95,13 +104,15 @@ function App() {
                 <div className='flex flex-grow items-center mr-3'>
                   <input
                     type='checkbox'
-                    checked={editCompleted}
-                    onChange={(e) => setEditCompleted(e.target.checked)}
+                    name='completed'
+                    checked={selectedTodo.completed}
+                    onChange={handleEditTodoChange}
                     className='accent-cyan-500 custom-checkbox w-6 h-6 mr-3'
                   ></input>
                   <input
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
+                    name='title'
+                    value={selectedTodo.title}
+                    onChange={handleEditTodoChange}
                     className='rounded-full w-full flex-grow px-3 py-0.5 outline outline-2 outline-gray-300'
                   ></input>
                 </div>
@@ -123,7 +134,7 @@ function App() {
                 {todo.id === selectedTodo?.id ? (
                   <>
                     <button
-                      onClick={() => setSelectedTodo(undefined)}
+                      onClick={() => setSelectedTodo(null)}
                       className='border rounded-full px-6 py-0.5 bg-gray-500 text-white mr-2'
                     >
                       Cancel
