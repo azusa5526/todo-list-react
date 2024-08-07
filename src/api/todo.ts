@@ -4,6 +4,7 @@ export interface Todo {
   id: string;
   completed: boolean;
   title: string;
+  sortIndex?: number;
 }
 
 export type TodoData = Omit<Todo, 'id'>;
@@ -22,4 +23,8 @@ export function updateTodo(id: string, data: TodoData) {
 
 export function deleteTodo(id: string) {
   return axiosInstance({ url: `/todos/${id}`, method: 'DELETE' });
+}
+
+export function updateTodoSortIndex(data: Todo[]) {
+  return axiosInstance({ url: '/todos/sortIndex', method: 'PATCH', data });
 }

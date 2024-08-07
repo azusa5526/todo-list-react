@@ -1,9 +1,17 @@
 import './App.css';
-import { useState, useEffect, useMemo } from 'react';
-import { getTodos, addTodo, deleteTodo, updateTodo, type Todo } from '@/api/todo';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  getTodos,
+  addTodo,
+  deleteTodo,
+  updateTodo,
+  updateTodoSortIndex,
+  type Todo,
+} from '@/api/todo';
 import DoneIcon from './assets/done.svg?react';
 import PendingIcon from './assets/pending.svg?react';
 import { TodoFilterDropdown } from './todoFilterDropdown';
+import Sortable from 'sortablejs';
 
 function App() {
   const [addTodoText, setAddTodoText] = useState('');
@@ -11,10 +19,36 @@ function App() {
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const filterOptions = ['All', 'Progress', 'Completed'];
   const [selectedFilter, setSelectedFilter] = useState(filterOptions[0]);
+  const todoListRef = useRef<HTMLUListElement>(null);
+  const sortable = useRef<Sortable>();
 
   useEffect(() => {
     fetchTodos();
+    if (todoListRef.current) {
+      sortable.current = new Sortable(todoListRef.current, {});
+    }
+
+    return () => {
+      if (sortable.current) {
+        sortable.current.destroy();
+      }
+    };
   }, []);
+
+  useEffect(() => {
+    if (sortable.current) {
+      sortable.current.options.onEnd = (event) => {
+        const { oldIndex, newIndex } = event;
+        if (oldIndex !== undefined && newIndex !== undefined) {
+          const updatedTodos = [...todos];
+          const [movedTodo] = updatedTodos.splice(oldIndex, 1);
+          updatedTodos.splice(newIndex, 0, movedTodo);
+          setTodos(updatedTodos);
+          handleSortTodo(updatedTodos);
+        }
+      };
+    }
+  }, [todos]);
 
   const filteredTodos = useMemo(() => {
     if (selectedFilter === 'All') return todos;
@@ -82,6 +116,14 @@ function App() {
     fetchTodos();
   }
 
+  async function handleSortTodo(todos: Todo[]) {
+    try {
+      await updateTodoSortIndex(todos);
+    } catch (error) {
+      console.error('handleSortTodo err', error);
+    }
+  }
+
   function handleSelectTodo(todo: Todo) {
     setSelectedTodo(todo);
   }
@@ -124,7 +166,7 @@ function App() {
           />
         </div>
 
-        <ul className='px-6 pb-6'>
+        <ul className='px-6 pb-6' ref={todoListRef}>
           {filteredTodos.map((todo, index) => (
             <li
               className={`flex items-center justify-between rounded-full px-5 py-3 ${index % 2 === 0 ? 'bg-gray-100' : ''} ${todo.id === selectedTodo?.id ? 'outline outline-2 outline-gray-300' : ''}`}
