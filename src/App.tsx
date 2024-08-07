@@ -1,17 +1,35 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getTodos, addTodo, deleteTodo, updateTodo, type Todo } from '@/api/todo';
 import DoneIcon from './assets/done.svg?react';
 import PendingIcon from './assets/pending.svg?react';
+import { TodoFilterDropdown } from './todoFilterDropdown';
 
 function App() {
   const [addTodoText, setAddTodoText] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const filterOptions = ['All', 'Progress', 'Completed'];
+  const [selectedFilter, setSelectedFilter] = useState(filterOptions[0]);
 
   useEffect(() => {
     fetchTodos();
   }, []);
+
+  const filteredTodos = useMemo(() => {
+    if (selectedFilter === 'All') return todos;
+
+    switch (selectedFilter) {
+      case 'All':
+        return todos;
+      case 'Progress':
+        return todos.filter((todo) => todo.completed);
+      case 'Completed':
+        return todos.filter((todo) => !todo.completed);
+      default:
+        return [];
+    }
+  }, [todos, selectedFilter]);
 
   const fetchTodos = async () => {
     try {
@@ -78,51 +96,63 @@ function App() {
     }
   };
 
+  function handleFilterChange(filter: string) {
+    setSelectedFilter(filter);
+  }
+
   return (
     <>
-      <div className='rounded-3xl shadow-lg w-[600px] min-h-[600px] border'>
-        <form onSubmit={handleSubmit} className='p-6 flex'>
+      <div className='min-h-[600px] w-[600px] rounded-3xl border shadow-lg'>
+        <form onSubmit={handleSubmit} className='flex p-6'>
           <input
-            className='border w-full rounded-full min-h-10 py-2 px-5 mr-3'
+            className='mr-3 min-h-10 w-full rounded-full border px-5 py-2'
             value={addTodoText}
             type='text'
             placeholder='Add todo'
             onChange={(e) => setAddTodoText(e.target.value)}
           />
-          <button type='submit' className='border rounded-full bg-gray-500 text-white px-6'>
+          <button type='submit' className='rounded-full border bg-gray-500 px-6 text-white'>
             Add
           </button>
         </form>
 
+        <div className='flex justify-end px-6'>
+          <TodoFilterDropdown
+            handleFilterChange={handleFilterChange}
+            options={filterOptions}
+            selectedFilter={selectedFilter}
+          />
+        </div>
+
         <ul className='px-6 pb-6'>
-          {todos.map((todo, index) => (
+          {filteredTodos.map((todo, index) => (
             <li
-              className={`flex justify-between items-center rounded-full px-5 py-3 ${index % 2 === 0 ? 'bg-gray-100' : ''} ${todo.id === selectedTodo?.id ? 'outline outline-2 outline-gray-300' : ''}`}
+              className={`flex items-center justify-between rounded-full px-5 py-3 ${index % 2 === 0 ? 'bg-gray-100' : ''} ${todo.id === selectedTodo?.id ? 'outline outline-2 outline-gray-300' : ''}`}
               key={todo.id}
             >
               {todo.id === selectedTodo?.id ? (
-                <div className='flex flex-grow items-center mr-3'>
+                <div className='mr-3 flex flex-grow items-center'>
                   <input
                     type='checkbox'
                     name='completed'
                     checked={selectedTodo.completed}
                     onChange={handleEditTodoChange}
-                    className='accent-cyan-500 custom-checkbox w-6 h-6 mr-3'
+                    className='custom-checkbox mr-3 h-6 w-6 accent-cyan-500'
                   ></input>
                   <input
                     name='title'
                     value={selectedTodo.title}
                     onChange={handleEditTodoChange}
-                    className='rounded-full w-full flex-grow px-3 py-0.5 outline outline-2 outline-gray-300'
+                    className='w-full flex-grow rounded-full px-3 py-0.5 outline outline-2 outline-gray-300'
                   ></input>
                 </div>
               ) : (
                 <div className='flex'>
                   <div className='mr-3 fill-current'>
                     {todo.completed ? (
-                      <DoneIcon className='w-6 h-6 text-gray-300' />
+                      <DoneIcon className='h-6 w-6 text-gray-300' />
                     ) : (
-                      <PendingIcon className='w-6 h-6 text-gray-600' />
+                      <PendingIcon className='h-6 w-6 text-gray-600' />
                     )}
                   </div>
                   <div className={todo.completed ? 'line-through opacity-40' : ''}>
@@ -135,13 +165,13 @@ function App() {
                   <>
                     <button
                       onClick={() => setSelectedTodo(null)}
-                      className='border rounded-full px-6 py-0.5 bg-gray-500 text-white mr-2'
+                      className='mr-2 rounded-full border bg-gray-500 px-6 py-0.5 text-white'
                     >
                       Cancel
                     </button>
                     <button
                       onClick={() => handleUpdateTodo()}
-                      className='border rounded-full px-6 py-0.5 bg-cyan-500 text-white '
+                      className='rounded-full border bg-cyan-500 px-6 py-0.5 text-white'
                     >
                       Save
                     </button>
@@ -150,13 +180,13 @@ function App() {
                   <>
                     <button
                       onClick={() => handleSelectTodo(todo)}
-                      className='border rounded-full px-6 py-0.5 bg-gray-500 text-white mr-2'
+                      className='mr-2 rounded-full border bg-gray-500 px-6 py-0.5 text-white'
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteTodo(todo.id)}
-                      className='border rounded-full px-6 py-0.5 bg-red-400 text-white'
+                      className='rounded-full border bg-red-400 px-6 py-0.5 text-white'
                     >
                       Del
                     </button>
