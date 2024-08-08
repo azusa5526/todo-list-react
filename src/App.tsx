@@ -40,9 +40,11 @@ function App() {
       sortable.current.options.onEnd = (event) => {
         const { oldIndex, newIndex } = event;
         if (oldIndex !== undefined && newIndex !== undefined) {
-          const updatedTodos = [...todos];
+          let updatedTodos = [...todos];
           const [movedTodo] = updatedTodos.splice(oldIndex, 1);
           updatedTodos.splice(newIndex, 0, movedTodo);
+
+          updatedTodos = updateSortIndex(updatedTodos);
           setTodos(updatedTodos);
           handleSortTodo(updatedTodos);
         }
@@ -140,6 +142,13 @@ function App() {
 
   function handleFilterChange(filter: string) {
     setSelectedFilter(filter);
+  }
+
+  function updateSortIndex(todos: Todo[]) {
+    return todos.map((todo, index) => ({
+      ...todo,
+      sortIndex: index,
+    }));
   }
 
   return (
