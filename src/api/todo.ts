@@ -10,21 +10,21 @@ export interface Todo {
 export type TodoData = Omit<Todo, 'id'>;
 
 export function getTodos() {
-  return axiosInstance({ url: '/todos', method: 'GET' });
+  return axiosInstance.get('/todos');
 }
 
 export function addTodo(data: TodoData) {
-  return axiosInstance({ url: `/todos`, method: 'POST', data });
+  return axiosInstance.post('/todos', { data });
 }
 
 export function updateTodo(id: string, data: TodoData) {
-  return axiosInstance({ url: `/todos/${id}`, method: 'PUT', data });
+  return axiosInstance.put(`/todos/${id}`, { data });
 }
 
 export function deleteTodo(id: string) {
-  return axiosInstance({ url: `/todos/${id}`, method: 'DELETE' });
+  return axiosInstance.delete(`/todos/${id}`);
 }
 
 export function updateTodoSortIndex(data: Todo[]) {
-  return axiosInstance({ url: '/todos/sortIndex', method: 'PATCH', data });
+  return axiosInstance.patch('/todos/sortIndex', { data });
 }
