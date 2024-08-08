@@ -37,6 +37,7 @@ function App() {
 
   useEffect(() => {
     if (sortable.current) {
+      sortable.current.option('disabled', selectedFilter !== 'All');
       sortable.current.options.onEnd = (event) => {
         const { oldIndex, newIndex } = event;
         if (oldIndex !== undefined && newIndex !== undefined) {
@@ -50,7 +51,7 @@ function App() {
         }
       };
     }
-  }, [todos]);
+  }, [todos, selectedFilter]);
 
   const filteredTodos = useMemo(() => {
     if (selectedFilter === 'All') return todos;
