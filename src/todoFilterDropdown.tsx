@@ -16,8 +16,8 @@ export function TodoFilterDropdown({
   return (
     <div className={className}>
       <Menu>
-        <MenuButton className='inline-flex items-center rounded-full bg-gray-800 px-4 py-1.5 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700'>
-          Options
+        <MenuButton className='inline-flex items-center rounded-full bg-gray-800 px-6 py-1.5 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700'>
+          Filter
         </MenuButton>
 
         <MenuItems

@@ -154,29 +154,31 @@ function App() {
 
   return (
     <>
-      <div className='min-h-[600px] w-[600px] rounded-3xl border shadow-lg'>
-        <form onSubmit={handleSubmit} className='flex p-6'>
-          <input
-            className='mr-3 min-h-10 w-full rounded-full border px-5 py-2'
-            value={addTodoText}
-            type='text'
-            placeholder='Add todo'
-            onChange={(e) => setAddTodoText(e.target.value)}
-          />
-          <button type='submit' className='rounded-full border bg-gray-500 px-6 text-white'>
-            Add
-          </button>
-        </form>
+      <div className='flex min-h-[600px] w-[600px] flex-col rounded-3xl border p-6 shadow-lg'>
+        <div>
+          <form onSubmit={handleSubmit} className='flex'>
+            <input
+              className='mr-3 min-h-10 w-full rounded-full border px-5 py-2 focus:outline-none'
+              value={addTodoText}
+              type='text'
+              placeholder='Add todo'
+              onChange={(e) => setAddTodoText(e.target.value)}
+            />
+            <button type='submit' className='rounded-full border bg-gray-500 px-6 text-white'>
+              Add
+            </button>
+          </form>
 
-        <div className='flex justify-end px-6'>
-          <TodoFilterDropdown
-            handleFilterChange={handleFilterChange}
-            options={filterOptions}
-            selectedFilter={selectedFilter}
-          />
+          <div className='flex justify-end pt-3'>
+            <TodoFilterDropdown
+              handleFilterChange={handleFilterChange}
+              options={filterOptions}
+              selectedFilter={selectedFilter}
+            />
+          </div>
         </div>
 
-        <ul className='px-6 pb-6' ref={todoListRef}>
+        <ul className='flex-grow overflow-y-auto pt-3' ref={todoListRef}>
           {filteredTodos.map((todo, index) => (
             <li
               className={`flex items-center justify-between rounded-full px-5 py-3 ${index % 2 === 0 ? 'bg-gray-100' : ''} ${todo.id === selectedTodo?.id ? 'outline outline-2 outline-gray-300' : ''}`}
