@@ -13,7 +13,7 @@ import PendingIcon from './assets/pending.svg?react';
 import { TodoFilterDropdown } from './todoFilterDropdown';
 import Sortable from 'sortablejs';
 
-function App() {
+export function App() {
   const [addTodoText, setAddTodoText] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
@@ -183,7 +183,7 @@ function App() {
           </div>
         </div>
 
-        <ul className='flex-grow overflow-y-auto pt-3' ref={todoListRef}>
+        <ul className='flex-grow overflow-y-auto pt-3' ref={todoListRef} data-testid='todo_ul'>
           {filteredTodos.map((todo, index) => (
             <li
               className={`flex items-center justify-between rounded-full px-5 py-3 ${index % 2 === 0 ? 'bg-gray-100' : ''} ${todo.id === selectedTodo?.id ? 'outline outline-2 outline-gray-300' : ''}`}
