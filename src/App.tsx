@@ -1,5 +1,5 @@
 import './App.css';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   getTodos,
   addTodo,
@@ -35,27 +35,35 @@ function App() {
     };
   }, []);
 
+  const handleOnEnd = useCallback(
+    (event: Sortable.SortableEvent) => {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex !== undefined && newIndex !== undefined) {
+        let updatedTodos = [...todos];
+        const [movedTodo] = updatedTodos.splice(oldIndex, 1);
+        updatedTodos.splice(newIndex, 0, movedTodo);
+
+        updatedTodos = updateSortIndex(updatedTodos);
+        setTodos(updatedTodos);
+        handleSortTodo(updatedTodos);
+      }
+    },
+    [todos],
+  );
+
+  useEffect(() => {
+    if (sortable.current) {
+      sortable.current.option('onEnd', handleOnEnd);
+    }
+  }, [handleOnEnd]);
+
   useEffect(() => {
     if (sortable.current) {
       sortable.current.option('disabled', selectedFilter !== 'All');
-      sortable.current.options.onEnd = (event) => {
-        const { oldIndex, newIndex } = event;
-        if (oldIndex !== undefined && newIndex !== undefined) {
-          let updatedTodos = [...todos];
-          const [movedTodo] = updatedTodos.splice(oldIndex, 1);
-          updatedTodos.splice(newIndex, 0, movedTodo);
-
-          updatedTodos = updateSortIndex(updatedTodos);
-          setTodos(updatedTodos);
-          handleSortTodo(updatedTodos);
-        }
-      };
     }
-  }, [todos, selectedFilter]);
+  }, [selectedFilter]);
 
   const filteredTodos = useMemo(() => {
-    if (selectedFilter === 'All') return todos;
-
     switch (selectedFilter) {
       case 'All':
         return todos;
