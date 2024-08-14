@@ -14,11 +14,11 @@ export function getTodos() {
 }
 
 export function addTodo(data: TodoData) {
-  return axiosInstance.post('/todos', { data });
+  return axiosInstance.post('/todos', data);
 }
 
 export function updateTodo(id: string, data: TodoData) {
-  return axiosInstance.put(`/todos/${id}`, { data });
+  return axiosInstance.put(`/todos/${id}`, data);
 }
 
 export function deleteTodo(id: string) {
@@ -26,5 +26,5 @@ export function deleteTodo(id: string) {
 }
 
 export function updateTodoSortIndex(data: Todo[]) {
-  return axiosInstance.patch('/todos/sortIndex', { data });
+  return axiosInstance.patch('/todos/sortIndex', data);
 }
