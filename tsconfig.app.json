@@ -30,10 +30,14 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "tests/*": [
+        "./tests/*"
       ]
     }
   },
   "include": [
-    "src"
+    "src",
+    "tests"
   ]
 }

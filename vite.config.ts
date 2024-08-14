@@ -1,4 +1,6 @@
-import { defineConfig } from 'vite';
+/// <reference types="vitest" />
+
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import svgr from 'vite-plugin-svgr';
@@ -9,6 +11,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      tests: path.resolve(__dirname, './tests'),
     },
+  },
+  test: {
+    environment: 'happy-dom',
+    setupFiles: ['tests/vitest.setup.ts'],
   },
 });
