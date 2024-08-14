@@ -100,8 +100,6 @@ function App() {
   }
 
   async function handleDeleteTodo(id: string) {
-    if (!id) return;
-
     try {
       await deleteTodo(id);
     } catch (err) {
@@ -113,7 +111,6 @@ function App() {
 
   async function handleUpdateTodo() {
     if (!selectedTodo) return;
-
     try {
       await updateTodo(selectedTodo.id, {
         title: selectedTodo.title,
