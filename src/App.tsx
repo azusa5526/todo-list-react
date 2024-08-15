@@ -110,6 +110,7 @@ export function App() {
   }
 
   async function handleUpdateTodo() {
+    console.log('handleUpdateTodo selectedTodo', selectedTodo);
     if (!selectedTodo) return;
     try {
       await updateTodo(selectedTodo.id, {
@@ -166,6 +167,7 @@ export function App() {
               className='mr-3 min-h-10 w-full rounded-full border px-5 py-2 focus:outline-none'
               value={addTodoText}
               type='text'
+              aria-label='Add todo'
               placeholder='Add todo'
               onChange={(e) => setAddTodoText(e.target.value)}
             />
@@ -202,6 +204,7 @@ export function App() {
                     name='title'
                     value={selectedTodo.title}
                     onChange={handleEditTodoChange}
+                    placeholder='title'
                     className='w-full flex-grow rounded-full px-3 py-0.5 outline outline-2 outline-gray-300'
                   ></input>
                 </div>
