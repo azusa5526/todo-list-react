@@ -110,7 +110,6 @@ export function App() {
   }
 
   async function handleUpdateTodo() {
-    console.log('handleUpdateTodo selectedTodo', selectedTodo);
     if (!selectedTodo) return;
     try {
       await updateTodo(selectedTodo.id, {

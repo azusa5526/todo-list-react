@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { App } from '@/App';
-import { getByPlaceholderText, render, within } from '@testing-library/react';
+import { fireEvent, render, within } from '@testing-library/react';
 import { flushAll } from 'tests/helper';
-import { addTodo, deleteTodo, updateTodo } from '@/api/todo';
+import { addTodo, deleteTodo, updateTodo, updateTodoSortIndex } from '@/api/todo';
 import userEvent from '@testing-library/user-event';
+import Sortable from 'sortablejs';
 
 const todos = [
   {
@@ -30,6 +31,7 @@ vi.mock(import('@/api/todo'), async (importOriginal) => {
     addTodo: vi.fn(),
     deleteTodo: vi.fn(),
     updateTodo: vi.fn(),
+    updateTodoSortIndex: vi.fn(),
   };
 });
 
@@ -107,5 +109,33 @@ describe('App.tsx', () => {
     });
   });
 
-  it('使用改變順序後的資料呼叫 API 改變 todos, 正確地依據新的排序渲染 todos', async () => {});
+  it('使用拖拉改變順序後， 使用正確的新排序資料呼叫 API 改變 todos', async () => {
+    const { getByTestId } = render(<App></App>);
+    await flushAll();
+
+    const ul = getByTestId('todo_ul');
+    const todoItems = within(ul).getAllByRole('listitem');
+    const sortableInstance = Sortable.get(ul);
+
+    expect(sortableInstance).not.toBeUndefined();
+
+    // 模擬 Sortable onEnd
+    //@ts-ignore
+    sortableInstance.option('onEnd')({
+      oldIndex: 1,
+      newIndex: 0,
+      item: todoItems[1],
+      from: ul,
+      to: ul,
+      //@ts-ignore
+      clone: null,
+      pullMode: undefined,
+    });
+
+    await flushAll();
+
+    expect(updateTodoSortIndex).toBeCalledWith(
+      [todos[1], todos[0]].map((todo, index) => ({ ...todo, sortIndex: index })),
+    );
+  });
 });
