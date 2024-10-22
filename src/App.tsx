@@ -1,262 +1,64 @@
 import './App.css';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import {
-  getTodos,
-  addTodo,
-  deleteTodo,
-  updateTodo,
-  updateTodoSortIndex,
-  type Todo,
-} from '@/api/todo';
-import DoneIcon from './assets/done.svg?react';
-import PendingIcon from './assets/pending.svg?react';
-import { TodoFilterDropdown } from './todoFilterDropdown';
-import Sortable from 'sortablejs';
+import { getContainers } from '@/api/trello';
+import { Container } from './api/trello-type';
+import MoreHorizIcon from './assets/more_horiz.svg?react';
 
 export function App() {
-  const [addTodoText, setAddTodoText] = useState('');
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
-  const filterOptions = ['All', 'Progress', 'Completed'];
-  const [selectedFilter, setSelectedFilter] = useState(filterOptions[0]);
-  const todoListRef = useRef<HTMLUListElement>(null);
-  const sortable = useRef<Sortable>();
+  const [containers, setContainers] = useState<Container[]>([]);
 
   useEffect(() => {
-    fetchTodos();
-    if (todoListRef.current) {
-      sortable.current = new Sortable(todoListRef.current, {});
-    }
-
-    return () => {
-      if (sortable.current) {
-        sortable.current.destroy();
-      }
-    };
+    fetchContainers();
   }, []);
 
-  const handleOnEnd = useCallback(
-    (event: Sortable.SortableEvent) => {
-      const { oldIndex, newIndex } = event;
-      if (oldIndex !== undefined && newIndex !== undefined) {
-        let updatedTodos = [...todos];
-        const [movedTodo] = updatedTodos.splice(oldIndex, 1);
-        updatedTodos.splice(newIndex, 0, movedTodo);
-
-        updatedTodos = updateSortIndex(updatedTodos);
-        setTodos(updatedTodos);
-        handleSortTodo(updatedTodos);
-      }
-    },
-    [todos],
-  );
-
-  useEffect(() => {
-    if (sortable.current) {
-      sortable.current.option('onEnd', handleOnEnd);
-    }
-  }, [handleOnEnd]);
-
-  useEffect(() => {
-    if (sortable.current) {
-      sortable.current.option('disabled', selectedFilter !== 'All');
-    }
-  }, [selectedFilter]);
-
-  const filteredTodos = useMemo(() => {
-    switch (selectedFilter) {
-      case 'All':
-        return todos;
-      case 'Progress':
-        return todos.filter((todo) => todo.completed);
-      case 'Completed':
-        return todos.filter((todo) => !todo.completed);
-      default:
-        return [];
-    }
-  }, [todos, selectedFilter]);
-
-  const fetchTodos = async () => {
+  const fetchContainers = async () => {
     try {
-      const res = await getTodos();
-      setTodos(res.data);
+      const res = await getContainers();
+      setContainers(res.data);
     } catch (err) {
-      console.error('getTodos err', err);
+      console.error('fetchContainers error', err);
     }
   };
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!addTodoText.trim()) return;
-
-    try {
-      await addTodo({ title: addTodoText, completed: false });
-      setAddTodoText('');
-    } catch (err) {
-      console.error('handleSubmit err', err);
-    }
-
-    fetchTodos();
-  }
-
-  async function handleDeleteTodo(id: string) {
-    try {
-      await deleteTodo(id);
-    } catch (err) {
-      console.error('handleDeleteTodo err', err);
-    }
-
-    fetchTodos();
-  }
-
-  async function handleUpdateTodo() {
-    if (!selectedTodo) return;
-    try {
-      await updateTodo(selectedTodo.id, {
-        title: selectedTodo.title,
-        completed: selectedTodo.completed,
-      });
-      setSelectedTodo(null);
-    } catch (error) {
-      console.error('updateTodo err', error);
-    }
-
-    fetchTodos();
-  }
-
-  async function handleSortTodo(todos: Todo[]) {
-    try {
-      await updateTodoSortIndex(todos);
-    } catch (error) {
-      console.error('handleSortTodo err', error);
-    }
-  }
-
-  function handleSelectTodo(todo: Todo) {
-    setSelectedTodo(todo);
-  }
-
-  const handleEditTodoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    if (selectedTodo) {
-      setSelectedTodo({
-        ...selectedTodo,
-        [name]: type === 'checkbox' ? checked : value,
-      });
-    }
+  const getRandomColor = () => {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    return `rgba(${r}, ${g}, ${b})`;
   };
-
-  function handleFilterChange(filter: string) {
-    setSelectedFilter(filter);
-  }
-
-  function updateSortIndex(todos: Todo[]) {
-    return todos.map((todo, index) => ({
-      ...todo,
-      sortIndex: index,
-    }));
-  }
 
   return (
     <>
-      <div className='flex min-h-[600px] w-[600px] flex-col rounded-3xl border p-6 shadow-lg'>
-        <div>
-          <form onSubmit={handleSubmit} className='flex'>
-            <input
-              className='mr-3 min-h-10 w-full rounded-full border px-5 py-2 focus:outline-none'
-              value={addTodoText}
-              type='text'
-              aria-label='Add todo'
-              placeholder='Add todo'
-              onChange={(e) => setAddTodoText(e.target.value)}
-            />
-            <button type='submit' className='rounded-full border bg-gray-500 px-6 text-white'>
-              Add
-            </button>
-          </form>
-
-          <div className='flex justify-end pt-3'>
-            <TodoFilterDropdown
-              handleFilterChange={handleFilterChange}
-              options={filterOptions}
-              selectedFilter={selectedFilter}
-            />
+      <div className='h-appbar shrink-0 bg-green-200'>header</div>
+      <div className='flex w-screen grow flex-col bg-sky-700'>
+        <div className='h-boardbar bg-yellow-200'>board header</div>
+        <div
+          className='flex grow gap-3 overflow-x-auto p-3'
+          style={{ maxHeight: 'calc(100vh - var(--appbar-height) - var(--boardbar-height))' }}
+        >
+          {containers.map((container) => (
+            <div className='flex w-72 shrink-0 flex-col overflow-hidden rounded-xl bg-gray-900'>
+              <div className='flex justify-between p-2 text-white'>
+                <div>Container: {container.name}</div>
+                <MoreHorizIcon role='button' className='h-6 w-6 text-gray-300' />
+              </div>
+              <div className='grow overflow-y-scroll' key={container._id}>
+                <div className='flex flex-col gap-2 p-2 text-2xl'>
+                  {Array.from({ length: 10 }, (_, index) => index++).map((item) => (
+                    <div className='py-12' style={{ backgroundColor: getRandomColor() }} key={item}>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className='grow bg-gray-300'>
+            <div role='button' className='w-72 whitespace-nowrap bg-gray-700 p-3 text-white'>
+              新增容器
+            </div>
           </div>
         </div>
-
-        <ul className='flex-grow overflow-y-auto pt-3' ref={todoListRef} data-testid='todo_ul'>
-          {filteredTodos.map((todo, index) => (
-            <li
-              className={`flex items-center justify-between rounded-full px-5 py-3 ${index % 2 === 0 ? 'bg-gray-100' : ''} ${todo.id === selectedTodo?.id ? 'outline outline-2 outline-gray-300' : ''}`}
-              key={todo.id}
-            >
-              {todo.id === selectedTodo?.id ? (
-                <div className='mr-3 flex flex-grow items-center'>
-                  <input
-                    type='checkbox'
-                    name='completed'
-                    checked={selectedTodo.completed}
-                    onChange={handleEditTodoChange}
-                    className='custom-checkbox mr-3 h-6 w-6 accent-cyan-500'
-                  ></input>
-                  <input
-                    name='title'
-                    value={selectedTodo.title}
-                    onChange={handleEditTodoChange}
-                    placeholder='title'
-                    className='w-full flex-grow rounded-full px-3 py-0.5 outline outline-2 outline-gray-300'
-                  ></input>
-                </div>
-              ) : (
-                <div className='flex'>
-                  <div className='mr-3 fill-current'>
-                    {todo.completed ? (
-                      <DoneIcon className='h-6 w-6 text-gray-300' />
-                    ) : (
-                      <PendingIcon className='h-6 w-6 text-gray-600' />
-                    )}
-                  </div>
-                  <div className={todo.completed ? 'line-through opacity-40' : ''}>
-                    {todo.title}
-                  </div>
-                </div>
-              )}
-              <div>
-                {todo.id === selectedTodo?.id ? (
-                  <>
-                    <button
-                      onClick={() => setSelectedTodo(null)}
-                      className='mr-2 rounded-full border bg-gray-500 px-6 py-0.5 text-white'
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => handleUpdateTodo()}
-                      className='rounded-full border bg-cyan-500 px-6 py-0.5 text-white'
-                    >
-                      Save
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => handleSelectTodo(todo)}
-                      className='mr-2 rounded-full border bg-gray-500 px-6 py-0.5 text-white'
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTodo(todo.id)}
-                      className='rounded-full border bg-red-400 px-6 py-0.5 text-white'
-                    >
-                      Del
-                    </button>
-                  </>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
       </div>
     </>
   );

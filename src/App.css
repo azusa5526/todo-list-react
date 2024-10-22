@@ -1,20 +1,3 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.custom-checkbox {
-  @apply relative cursor-pointer bg-white size-4 appearance-none border-2 border-cyan-500 rounded;
-}
-
-.custom-checkbox:checked {
-  @apply bg-cyan-500;
-}
-
-.custom-checkbox:checked::before {
-  content: '✔';
-  transform: translate(-50%, -50%) scaleX(1.2);
-  @apply text-white absolute top-1/2 left-1/2;
+  @apply flex h-dvh flex-col overflow-hidden bg-red-100;
 }
