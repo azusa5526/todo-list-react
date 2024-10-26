@@ -1,13 +1,34 @@
 import MoreHorizIcon from '../assets/more_horiz.svg?react';
 import type { Container } from '../api/trello-type';
 import Card from './Card.tsx';
+import { deleteContainer } from '@/api/trello.ts';
 
-export default function Container({ container }: { container: Container }) {
+interface ContainerProps {
+  container: Container;
+  onDelete: (id: string) => void;
+}
+
+export default function Container({ container, onDelete }: ContainerProps) {
+  async function onDeleteContainer(id: string) {
+    try {
+      await deleteContainer(id);
+      onDelete(container._id);
+    } catch (error) {
+      console.log('onDeleteContainer err: ', error);
+    }
+  }
+
   return (
     <div className='container flex max-h-min w-72 shrink-0 flex-col overflow-hidden rounded-xl bg-gray-900'>
       <div className='flex items-center justify-between py-2 text-white'>
         <div className='ml-4'>{container.name}</div>
-        <MoreHorizIcon role='button' className='mr-2 h-5 w-5 text-gray-300' />
+        <MoreHorizIcon
+          role='button'
+          className='mr-2 h-5 w-5 text-gray-300'
+          onClick={() => {
+            onDeleteContainer(container._id);
+          }}
+        />
       </div>
       {container.cards.length > 0 && (
         <div className='custom-scrollbar overflow-y-auto'>
