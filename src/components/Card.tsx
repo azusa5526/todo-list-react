@@ -1,7 +1,7 @@
 import type { Card } from '../api/trello-type';
 import { getRandomColor } from '@/utils/get-random-color';
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import MoreHorizIcon from '../assets/more_horiz.svg?react';
 import { isSupportedImageUrl } from '@/utils/is-supported-image';
 import { clsx } from 'clsx';
@@ -32,7 +32,18 @@ export default function Card({ card, className }: CardProps) {
           />
         )}
         <h3 className='px-3 py-2 text-sm font-bold'>{card.title}</h3>
-        <p className='text-sm'>{card.description}</p>
+        <div className='flex gap-x-2 px-3'>
+          {card.attachments && card.attachments.length > 0 && (
+            <div className='mb-2 flex items-center'>
+              <MoreHorizIcon className='mr-1 h-5 w-5' />
+              <div className='text-sm'>{card.attachments?.length}</div>
+            </div>
+          )}
+
+          {card.description && card.description.length > 0 && (
+            <MoreHorizIcon className='mb-2 mr-1 h-5 w-5' />
+          )}
+        </div>
         {/* <p className='text-xs text-gray-400'>{new Date(card.date).toLocaleDateString()}</p> */}
       </div>
       <CardDialog card={card} isOpen={isDialogOpen} onClose={closeDialog} />
