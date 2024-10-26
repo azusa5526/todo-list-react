@@ -11,10 +11,10 @@ export interface AddContainerDTO {
 export interface Card {
   _id: string;
   title: string;
-  description: string;
-  date: string;
-  coverImage: string;
-  attachments: Attachment[];
+  description?: string;
+  date?: string;
+  coverImage?: string;
+  attachments?: Attachment[];
   containerId: string;
 }
 

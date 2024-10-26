@@ -11,9 +11,13 @@ export default function Container({ container }: { container: Container }) {
       </div>
       {container.cards.length > 0 && (
         <div className='custom-scrollbar overflow-y-auto'>
-          <div className='flex flex-col gap-2 p-2 pb-0 text-2xl'>
+          <div className='flex flex-col gap-2 p-2 pb-0.5 text-2xl'>
             {container.cards.map((card) => (
-              <Card key={card._id} card={card} />
+              <Card
+                className='transition hover:shadow-[0_0_0_2px_white]'
+                key={card._id}
+                card={card}
+              />
             ))}
           </div>
         </div>
