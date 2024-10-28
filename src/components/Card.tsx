@@ -6,6 +6,7 @@ import MoreHorizIcon from '../assets/more_horiz.svg?react';
 import { isSupportedImageUrl } from '@/utils/is-supported-image';
 import { clsx } from 'clsx';
 import { useContainerStore } from '@/store/useContainerStore';
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
 
 interface CardProps {
   card: Card;
@@ -59,7 +60,6 @@ interface CardDialogProps {
 }
 
 function CardDialog({ card, isOpen, onClose }: CardDialogProps) {
-  const { deleteCardFromContainer } = useContainerStore();
   const apiUrl = import.meta.env.VITE_API_URL;
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -170,15 +170,7 @@ function CardDialog({ card, isOpen, onClose }: CardDialogProps) {
                     {item}
                   </div>
                 ))}
-                <div
-                  className='flex items-center rounded px-2 py-1 text-white'
-                  role='button'
-                  style={{ backgroundColor: getRandomColor() }}
-                  onClick={() => deleteCardFromContainer(card.containerId, card._id)}
-                >
-                  <MoreHorizIcon className='mr-2 h-5 w-5' />
-                  刪除卡片
-                </div>
+                <DeleteCardPopover card={card} />
               </div>
             </div>
           </DialogPanel>
@@ -247,5 +239,57 @@ export function NewCardButton({ containerId }: NewCardButtonProps) {
         </div>
       )}
     </>
+  );
+}
+
+interface DeleteCardProps {
+  card: Card;
+}
+
+function DeleteCardPopover({ card }: DeleteCardProps) {
+  const { deleteCardFromContainer } = useContainerStore();
+
+  return (
+    <Popover>
+      {({ close }) => (
+        <>
+          <PopoverButton className='w-full'>
+            <div
+              className='flex items-center rounded px-2 py-1 text-white'
+              style={{ backgroundColor: getRandomColor() }}
+            >
+              <MoreHorizIcon className='mr-2 h-5 w-5' />
+              刪除卡片
+            </div>
+          </PopoverButton>
+          <PopoverPanel
+            anchor={{ to: 'top start', gap: '8px' }}
+            transition
+            className='flex origin-top flex-col rounded-lg bg-gray-800 text-gray-100 outline outline-1 outline-gray-500 transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0'
+          >
+            <div className='relative flex w-72 flex-col p-3'>
+              <div className='pb-2 text-center'>刪除卡片</div>
+              <div role='button' onClick={close}>
+                <MoreHorizIcon className='absolute right-3.5 top-3.5 h-5 w-5' />
+              </div>
+
+              <div className='pb-4 text-sm'>
+                此動作將刪除卡片與相關附件，你將無法再次復原，是否刪除？
+              </div>
+              <div
+                role='button'
+                className='grow rounded bg-red-400 p-1.5 text-center text-sm text-gray-800'
+                onClick={() => {
+                  deleteCardFromContainer(card.containerId, card._id);
+                  close();
+                }}
+              >
+                刪除
+              </div>
+            </div>
+          </PopoverPanel>
+        </>
+      )}
+    </Popover>
   );
 }
