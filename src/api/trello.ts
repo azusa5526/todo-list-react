@@ -18,8 +18,11 @@ export function deleteContainer(id: string) {
   return axiosInstance.delete(`/containers/${id}`);
 }
 
-export function addCard(data: { title: string }): AxiosPromise<Card> {
-  return axiosInstance.post('/cards', data);
+export function addCard(
+  data: { title: string },
+  params: { containerId: string },
+): AxiosPromise<Card> {
+  return axiosInstance.post('/cards', data, { params });
 }
 
 export function updateCard(id: string, data: UpdateCardDTO): AxiosPromise<Card> {

@@ -37,7 +37,7 @@ export function Container({ container }: ContainerProps) {
         </div>
       )}
       <div className='flex items-center p-2'>
-        <NewCardButton onAdd={() => {}}></NewCardButton>
+        <NewCardButton containerId={container._id}></NewCardButton>
       </div>
     </div>
   );

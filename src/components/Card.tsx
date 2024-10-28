@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import MoreHorizIcon from '../assets/more_horiz.svg?react';
 import { isSupportedImageUrl } from '@/utils/is-supported-image';
 import { clsx } from 'clsx';
+import { useContainerStore } from '@/store/useContainerStore';
 
 interface CardProps {
   card: Card;
@@ -58,6 +59,7 @@ interface CardDialogProps {
 }
 
 function CardDialog({ card, isOpen, onClose }: CardDialogProps) {
+  const { deleteCardFromContainer } = useContainerStore();
   const apiUrl = import.meta.env.VITE_API_URL;
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -168,11 +170,82 @@ function CardDialog({ card, isOpen, onClose }: CardDialogProps) {
                     {item}
                   </div>
                 ))}
+                <div
+                  className='flex items-center rounded px-2 py-1 text-white'
+                  role='button'
+                  style={{ backgroundColor: getRandomColor() }}
+                  onClick={() => deleteCardFromContainer(card.containerId, card._id)}
+                >
+                  <MoreHorizIcon className='mr-2 h-5 w-5' />
+                  刪除卡片
+                </div>
               </div>
             </div>
           </DialogPanel>
         </div>
       </div>
     </Dialog>
+  );
+}
+
+interface NewCardButtonProps {
+  containerId: string;
+}
+
+export function NewCardButton({ containerId }: NewCardButtonProps) {
+  const { addCardToContainer } = useContainerStore();
+  const [newCardOpen, setNewCardOpen] = useState(false);
+  const [cardTitle, setCardTitle] = useState('');
+
+  async function onAddCard() {
+    if (cardTitle.trim()) {
+      await addCardToContainer(containerId, cardTitle);
+      setNewCardOpen(false);
+      setCardTitle('');
+    }
+  }
+
+  return (
+    <>
+      {newCardOpen ? (
+        <div className='flex shrink-0 grow flex-col rounded-xl bg-gray-900'>
+          <input
+            value={cardTitle}
+            onChange={(e) => setCardTitle(e.target.value)}
+            type='text'
+            className='text- mb-2 grow rounded px-2 py-1'
+          />
+          <div className='flex items-center'>
+            <div
+              onClick={onAddCard}
+              role='button'
+              className='mr-2 rounded bg-blue-400 px-3 py-1.5 text-sm text-gray-900'
+            >
+              新增卡片
+            </div>
+            <MoreHorizIcon
+              role='button'
+              className='h-5 w-5'
+              onClick={() => {
+                setNewCardOpen(false);
+                setCardTitle('');
+              }}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className='flex grow items-center'>
+          <div
+            className='mr-2 flex grow items-center rounded-lg bg-slate-800 px-2 py-1 text-white'
+            role='button'
+            onClick={() => setNewCardOpen(true)}
+          >
+            <MoreHorizIcon role='button' className='mr-2 h-5 w-5 text-gray-300' />
+            新增卡片
+          </div>
+          <MoreHorizIcon role='button' className='h-5 w-5 text-gray-300' />
+        </div>
+      )}
+    </>
   );
 }
