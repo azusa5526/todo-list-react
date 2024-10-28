@@ -1,22 +1,15 @@
 import MoreHorizIcon from '../assets/more_horiz.svg?react';
 import type { Container } from '../api/trello-type';
-import Card from './Card.tsx';
-import { deleteContainer } from '@/api/trello.ts';
+import Card, { NewCardButton } from './Card.tsx';
+import { useState } from 'react';
+import { useContainerStore } from '@/store/useContainerStore.ts';
 
 interface ContainerProps {
   container: Container;
-  onDelete: (id: string) => void;
 }
 
-export default function Container({ container, onDelete }: ContainerProps) {
-  async function onDeleteContainer(id: string) {
-    try {
-      await deleteContainer(id);
-      onDelete(container._id);
-    } catch (error) {
-      console.log('onDeleteContainer err: ', error);
-    }
-  }
+export function Container({ container }: ContainerProps) {
+  const { deleteContainer } = useContainerStore();
 
   return (
     <div className='container flex max-h-min w-72 shrink-0 flex-col overflow-hidden rounded-xl bg-gray-900'>
@@ -26,7 +19,7 @@ export default function Container({ container, onDelete }: ContainerProps) {
           role='button'
           className='mr-2 h-5 w-5 text-gray-300'
           onClick={() => {
-            onDeleteContainer(container._id);
+            deleteContainer(container._id);
           }}
         />
       </div>
@@ -44,15 +37,68 @@ export default function Container({ container, onDelete }: ContainerProps) {
         </div>
       )}
       <div className='flex items-center p-2'>
-        <div
-          className='mr-2 flex grow items-center rounded-lg bg-slate-800 px-2 py-1 text-white'
-          role='button'
-        >
-          <MoreHorizIcon role='button' className='mr-2 h-5 w-5 text-gray-300' />
-          新增卡片
-        </div>
-        <MoreHorizIcon role='button' className='h-5 w-5 text-gray-300' />
+        <NewCardButton onAdd={() => {}}></NewCardButton>
       </div>
     </div>
+  );
+}
+
+export function NewContainerButton() {
+  const { addNewContainer } = useContainerStore();
+  const [newContainerOpen, setNewContainerOpen] = useState(false);
+  const [newContainerText, setNewContainerText] = useState('');
+
+  async function onAddContainer() {
+    if (newContainerText.trim().length) {
+      try {
+        await addNewContainer(newContainerText);
+        setNewContainerOpen(false);
+        setNewContainerText('');
+      } catch (error) {
+        console.log('addContainer err: ', error);
+      }
+    }
+  }
+
+  return (
+    <>
+      {newContainerOpen ? (
+        <div className='flex max-h-fit w-72 shrink-0 flex-col rounded-xl bg-gray-900 p-2'>
+          <input
+            value={newContainerText}
+            onChange={(e) => setNewContainerText(e.target.value)}
+            type='text'
+            className='text- mb-2 grow rounded px-2 py-1'
+          />
+          <div className='flex items-center'>
+            <div
+              onClick={onAddContainer}
+              role='button'
+              className='mr-2 rounded bg-blue-400 px-3 py-1.5 text-sm text-gray-900'
+            >
+              新增容器
+            </div>
+            <MoreHorizIcon
+              role='button'
+              className='h-5 w-5'
+              onClick={() => {
+                setNewContainerOpen(false);
+                setNewContainerText('');
+              }}
+            />
+          </div>
+        </div>
+      ) : (
+        <div
+          className='max-h-fit w-72 shrink-0 rounded-xl bg-sky-500'
+          onClick={() => setNewContainerOpen(true)}
+        >
+          <div role='button' className='flex items-center p-3 text-white'>
+            <MoreHorizIcon role='button' className='mr-2 h-5 w-5 text-gray-300' />
+            新增容器
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -1,35 +1,16 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import { getContainers } from '@/api/trello';
-import type { Container as ContainerType } from './api/trello-type';
-import Container from './components/Container';
-import { NewContainerButton } from './components/NewContainerButton';
+import { Container, NewContainerButton } from './components/Container';
 import { BoardSidebar } from './components/BoardSidebar';
+import { useContainerStore } from './store/useContainerStore';
 
 export function App() {
-  const [containers, setContainers] = useState<ContainerType[]>([]);
+  const { containers, fetchContainers } = useContainerStore();
   const [boardSidebarOpen, setBoardSidebarOpen] = useState(true);
 
   useEffect(() => {
     fetchContainers();
-  }, []);
-
-  const fetchContainers = async () => {
-    try {
-      const res = await getContainers();
-      setContainers(res.data);
-    } catch (err) {
-      console.error('fetchContainers error', err);
-    }
-  };
-
-  function onAddContainer(container: ContainerType) {
-    setContainers([...containers, container]);
-  }
-
-  function onDeleteContainer(id: string) {
-    setContainers(containers.filter((container) => container._id !== id));
-  }
+  }, [fetchContainers]);
 
   function onBoardSidebarToggle(isOpen: boolean) {
     setBoardSidebarOpen(isOpen);
@@ -58,9 +39,9 @@ export function App() {
             style={{ height: 'calc(100vh - var(--appbar-height) - var(--boardbar-height))' }}
           >
             {containers.map((container) => (
-              <Container key={container._id} container={container} onDelete={onDeleteContainer} />
+              <Container key={container._id} container={container} />
             ))}
-            <NewContainerButton onAdd={onAddContainer}></NewContainerButton>
+            <NewContainerButton></NewContainerButton>
           </div>
         </div>
       </div>
