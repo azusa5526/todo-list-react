@@ -2,7 +2,8 @@ import { getRandomColor } from '@/utils/get-random-color';
 import { useAppStore } from '@/store/useAppStore';
 import { Container, NewContainerButton } from './Container';
 import { useContainerStore } from '@/store/useContainerStore';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import Sortable from 'sortablejs';
 
 export function BoardSidebar() {
   const { boardSidebarOpen } = useAppStore();
@@ -40,15 +41,54 @@ export function BoardHeader() {
 }
 
 export function BoardContent() {
-  const { containers, fetchContainers } = useContainerStore();
+  const { containers, fetchContainers, updateContainerOrder } = useContainerStore();
+  const containerListRef = useRef<HTMLDivElement>(null);
+  const sortable = useRef<Sortable>();
 
   useEffect(() => {
     fetchContainers();
+    if (containerListRef.current) {
+      sortable.current = new Sortable(containerListRef.current, {
+        handle: '.container-handle',
+        animation: 150,
+      });
+    }
+
+    return () => {
+      if (sortable.current) {
+        sortable.current.destroy();
+      }
+    };
   }, [fetchContainers]);
+
+  const handleOnEnd = useCallback(
+    (event: Sortable.SortableEvent) => {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex === undefined || newIndex === undefined) return;
+
+      const newContainers = [...containers];
+      const [movedContainer] = newContainers.splice(oldIndex, 1);
+      newContainers.splice(newIndex, 0, movedContainer);
+
+      newContainers.forEach((container, index) => {
+        container.sortIndex = index;
+      });
+
+      updateContainerOrder(newContainers);
+    },
+    [containers, updateContainerOrder],
+  );
+
+  useEffect(() => {
+    if (sortable.current) {
+      sortable.current.option('onEnd', handleOnEnd);
+    }
+  }, [handleOnEnd]);
 
   return (
     <div
       className='flex grow gap-3 overflow-x-auto p-3'
+      ref={containerListRef}
       style={{ height: 'calc(100vh - var(--appbar-height) - var(--boardbar-height))' }}
     >
       {containers.map((container) => (

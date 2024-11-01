@@ -19,37 +19,37 @@ export default function Card({ card, className }: CardProps) {
   const openDialog = () => setIsDialogOpen(true);
   const closeDialog = () => setIsDialogOpen(false);
   return (
-    <>
-      <div
-        className={clsx('card overflow-hidden rounded-lg text-white', className)}
-        style={{ backgroundColor: getRandomColor() }}
-        onClick={openDialog}
-      >
-        {card.coverImage && (
-          <img
-            src={`${apiUrl}/${card.coverImage}`}
-            alt={card.title}
-            className='h-auto w-full object-cover'
-            draggable='false'
-          />
+    <div
+      className={clsx('card overflow-hidden rounded-lg border text-white', className)}
+      onClick={openDialog}
+      data-id={card._id}
+    >
+      {card.coverImage && (
+        <img
+          src={`${apiUrl}/${card.coverImage}`}
+          alt={card.title}
+          className='h-auto w-full object-cover'
+          draggable='false'
+        />
+      )}
+      <h3 className='px-3 py-2 text-sm font-bold'>
+        {card.title} {card._id.slice(-4)}
+      </h3>
+      <div className='flex gap-x-2 px-3'>
+        {card.attachments && card.attachments.length > 0 && (
+          <div className='mb-2 flex items-center'>
+            <MoreHorizIcon className='mr-1 h-5 w-5' />
+            <div className='text-sm'>{card.attachments?.length}</div>
+          </div>
         )}
-        <h3 className='px-3 py-2 text-sm font-bold'>{card.title}</h3>
-        <div className='flex gap-x-2 px-3'>
-          {card.attachments && card.attachments.length > 0 && (
-            <div className='mb-2 flex items-center'>
-              <MoreHorizIcon className='mr-1 h-5 w-5' />
-              <div className='text-sm'>{card.attachments?.length}</div>
-            </div>
-          )}
 
-          {card.description && card.description.length > 0 && (
-            <MoreHorizIcon className='mb-2 mr-1 h-5 w-5' />
-          )}
-        </div>
-        {/* <p className='text-xs text-gray-400'>{new Date(card.date).toLocaleDateString()}</p> */}
+        {card.description && card.description.length > 0 && (
+          <MoreHorizIcon className='mb-2 mr-1 h-5 w-5' />
+        )}
       </div>
+      {/* <p className='text-xs text-gray-400'>{new Date(card.date).toLocaleDateString()}</p> */}
       <CardDialog card={card} isOpen={isDialogOpen} onClose={closeDialog} />
-    </>
+    </div>
   );
 }
 

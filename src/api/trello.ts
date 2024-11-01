@@ -14,6 +14,10 @@ export function updateContainer(id: string, data: { name: string }): AxiosPromis
   return axiosInstance.patch(`/containers/${id}`, data);
 }
 
+export function updateContainerOrder(data: { _id: string; sortIndex: number }[]) {
+  return axiosInstance.put('/containers/order', data);
+}
+
 export function deleteContainer(id: string) {
   return axiosInstance.delete(`/containers/${id}`);
 }
@@ -33,10 +37,6 @@ export function deleteCard(id: string) {
   return axiosInstance.delete(`/cards/${id}`);
 }
 
-export function moveCard(id: string, data: { targetContainerId: string }) {
-  return axiosInstance.patch(`/cards/${id}/move`, data);
-}
-
 export function addAttachments(id: string, data: { files: File[] }): AxiosPromise<Card> {
   return axiosInstance.postForm(`/cards/${id}/attachments`, { files: data.files });
 }
@@ -51,4 +51,19 @@ export function patchCoverImage(id: string, data: { url: string }): AxiosPromise
 
 export function deleteAttachment(id: string, data: { url: string }): AxiosPromise<Card> {
   return axiosInstance.delete(`/cards/${id}/attachment`, data);
+}
+
+export function updateCardOrder(
+  containerId: string,
+  data: { _id: string; sortIndex: number }[],
+): AxiosPromise<void> {
+  return axiosInstance.patch(`/cards/order/${containerId}`, data);
+}
+
+export function moveCard(
+  cardId: string,
+  targetContainerId: string,
+  data: { newIndex: number },
+): AxiosPromise<void> {
+  return axiosInstance.patch(`/cards/move/${cardId}/${targetContainerId}`, data);
 }

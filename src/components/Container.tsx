@@ -1,19 +1,76 @@
 import MoreHorizIcon from '../assets/more_horiz.svg?react';
 import type { Container } from '../api/trello-type';
 import Card, { NewCardButton } from './Card.tsx';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useContainerStore } from '@/store/useContainerStore.ts';
+import Sortable from 'sortablejs';
 
 interface ContainerProps {
   container: Container;
 }
 
 export function Container({ container }: ContainerProps) {
-  const { deleteContainer } = useContainerStore();
+  const { deleteContainer, moveCardToContainer, updateCardOrder } = useContainerStore();
+  const cardListRef = useRef<HTMLDivElement>(null);
+  const sortable = useRef<Sortable>();
+
+  useEffect(() => {
+    if (cardListRef.current) {
+      sortable.current = new Sortable(cardListRef.current, {
+        group: 'cards',
+        animation: 150,
+        fallbackOnBody: true,
+        swapThreshold: 0.65,
+      });
+    }
+
+    return () => {
+      if (sortable.current) {
+        sortable.current.destroy();
+      }
+    };
+  });
+
+  const handleOnEnd = useCallback(
+    (event: Sortable.SortableEvent) => {
+      const { oldIndex, newIndex, from, to, item } = event;
+      const cardId = item.getAttribute('data-id');
+      if (!cardId) return;
+
+      if (from === to) {
+        // 同 container 內部拖曳排序卡片
+        const updatedCards = [...container.cards];
+        const [movedCard] = updatedCards.splice(oldIndex!, 1);
+        updatedCards.splice(newIndex!, 0, movedCard);
+        // updateCardOrder(container._id, updatedCards);
+      } else {
+        // 跨 container 拖曳排序卡片
+        const targetContainerId = to.getAttribute('data-container-id');
+        if (targetContainerId) {
+          moveCardToContainer(cardId, targetContainerId, newIndex!);
+        }
+      }
+    },
+    [container._id, container.cards, moveCardToContainer, updateCardOrder],
+  );
+
+  const handleOnAdd = useCallback((event: Sortable.SortableEvent) => {
+    const { item, from } = event;
+    if (from && item && !from.contains(item)) {
+      from.appendChild(item);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sortable.current) {
+      sortable.current.option('onEnd', handleOnEnd);
+      sortable.current.option('onAdd', handleOnAdd);
+    }
+  }, [handleOnAdd, handleOnEnd]);
 
   return (
     <div className='container flex max-h-min w-72 shrink-0 flex-col overflow-hidden rounded-xl bg-gray-900'>
-      <div className='flex items-center justify-between py-2 text-white'>
+      <div className='container-handle flex items-center justify-between py-2 text-white'>
         <div className='ml-4'>{container.name}</div>
         <MoreHorizIcon
           role='button'
@@ -23,19 +80,23 @@ export function Container({ container }: ContainerProps) {
           }}
         />
       </div>
-      {container.cards.length > 0 && (
-        <div className='custom-scrollbar overflow-y-auto'>
-          <div className='flex flex-col gap-2 p-2 pb-0.5 text-2xl'>
-            {container.cards.map((card) => (
-              <Card
-                className='transition hover:shadow-[0_0_0_2px_white]'
-                key={card._id}
-                card={card}
-              />
-            ))}
-          </div>
+
+      <div className='custom-scrollbar overflow-y-auto'>
+        <div
+          ref={cardListRef}
+          className='flex flex-col gap-2 p-2 pb-0.5 text-2xl'
+          data-container-id={container._id}
+        >
+          {container.cards.map((card) => (
+            <Card
+              className='transition hover:shadow-[0_0_0_2px_white]'
+              key={`${container._id}-${card._id}`}
+              card={card}
+            />
+          ))}
         </div>
-      )}
+      </div>
+
       <div className='flex items-center p-2'>
         <NewCardButton containerId={container._id}></NewCardButton>
       </div>
